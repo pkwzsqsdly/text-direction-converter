@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文字方向转换器</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>文字方向转换器</h1>
+    <div class="container">
+        <div class="card input-area">
+            <h2>输入文字</h2>
+            <textarea id="inputText" placeholder="请输入要转换的文字..."></textarea>
+        </div>
+        <div class="card output-area">
+            <div class="controls">
+                <label>
+                    每列行数(留空自动计算):
+                    <input type="number" id="charsPerRow" min="1" placeholder="自动">
+                </label>
+            </div>
+            <h2>排列结果:</h2>
+            <div id="outputText"></div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
