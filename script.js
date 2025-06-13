@@ -2,6 +2,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const inputText = document.getElementById('inputText');
     const outputText = document.getElementById('outputText');
     const charsPerRowInput = document.getElementById('charsPerRow');
+    const copyBtn = document.getElementById('copyBtn');
+    
+    // 复制功能(添加说明文字)
+    copyBtn.addEventListener('click', function() {
+        const textToCopy = outputText.textContent;
+        if (textToCopy) {
+            const prefix = "⬇️⬇️⬇️从左到右竖向观看⬇️⬇️⬇️(文字方向转换器)\n\n";
+            navigator.clipboard.writeText(prefix + textToCopy)
+                .then(() => {
+                    copyBtn.textContent = '已复制!';
+                    setTimeout(() => {
+                        copyBtn.textContent = '复制';
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('复制失败:', err);
+                });
+        }
+    });
     
     function formatText() {
         const text = inputText.value.replace(/\n|\r/g, '');
@@ -33,8 +52,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // 将矩阵转换为字符串
-        const result = resultMatrix.map(row => row.join(' ')).join('\n');
+        // 将矩阵转换为字符串(不加空格)
+        const result = resultMatrix.map(row => row.join('')).join('\n');
         outputText.textContent = result;
     }
     
