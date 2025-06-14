@@ -5,25 +5,44 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyBtn = document.getElementById('copyBtn');
     
     // 复制功能(添加说明文字)
-    copyBtn.addEventListener('click', function() {
+    copyBtn.addEventListener('click', async function() {
         const textToCopy = outputText.textContent;
-        if (textToCopy) {
-            const prefix = "⬇️⬇️⬇️从左到右竖向观看⬇️⬇️⬇️(文字方向转换器)\n\n";
-            navigator.clipboard.writeText(prefix + textToCopy)
-                .then(() => {
-                    copyBtn.textContent = '已复制!';
-                    setTimeout(() => {
-                        copyBtn.textContent = '复制';
-                    }, 2000);
-                })
-                .catch(err => {
-                    console.error('复制失败:', err);
-                });
+        if (!textToCopy) return;
+
+        const prefix = "⬇️⬇️⬇️从左到右竖向观看⬇️⬇️⬇️(文字方向转换器)\n\n";
+        const fullText = prefix + textToCopy;
+
+        try {
+            // 尝试使用现代Clipboard API
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(fullText);
+            } else {
+                // 备用方法：使用document.execCommand
+                const textarea = document.createElement('textarea');
+                textarea.value = fullText;
+                textarea.style.position = 'fixed';  // 防止滚动
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+            }
+            
+            // 更新UI反馈
+            copyBtn.textContent = '已复制!';
+            setTimeout(() => {
+                copyBtn.textContent = '复制';
+            }, 2000);
+            
+        } catch (err) {
+            console.error('复制失败:', err);
+            // 提供手动复制选项
+            outputText.select();
+            alert('自动复制失败，请手动复制文本:\n\n' + fullText);
         }
     });
     
     function formatText() {
-        const text = inputText.value.replace(/\n|\r/g, '');
+        const text = inputText.value.replace(/\r\n|\n|\r/g, '');
         const columnHeight = parseInt(charsPerRowInput.value) || null;
         
         outputText.innerHTML = '';
@@ -52,8 +71,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
         
-        // 将矩阵转换为字符串(不加空格)
-        const result = resultMatrix.map(row => row.join('')).join('\n');
+        // 将矩阵转换为字符串
+        const result = resultMatrix.map(row => row.join(' ')).join('\n');
         outputText.textContent = result;
     }
     
