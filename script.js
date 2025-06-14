@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const copyBtn = document.getElementById('copyBtn');
     
     // 复制功能(添加说明文字)
-    copyBtn.addEventListener('click', async function() {
+    copyBtn.addEventListener('click', async function(e) {
         const textToCopy = outputText.textContent;
         if (!textToCopy) return;
 
@@ -13,32 +13,62 @@ document.addEventListener('DOMContentLoaded', function() {
         const fullText = prefix + textToCopy;
 
         try {
-            // 尝试使用现代Clipboard API
+            // 创建临时textarea元素
+            const textarea = document.createElement('textarea');
+            textarea.value = fullText;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            
+            // 移动端需要先聚焦再选择
+            textarea.focus();
+            textarea.select();
+            
+            // 尝试复制
+            let success = false;
             if (navigator.clipboard && navigator.clipboard.writeText) {
-                await navigator.clipboard.writeText(fullText);
-            } else {
-                // 备用方法：使用document.execCommand
-                const textarea = document.createElement('textarea');
-                textarea.value = fullText;
-                textarea.style.position = 'fixed';  // 防止滚动
-                document.body.appendChild(textarea);
-                textarea.select();
-                document.execCommand('copy');
-                document.body.removeChild(textarea);
+                try {
+                    await navigator.clipboard.writeText(fullText);
+                    success = true;
+                } catch (err) {
+                    console.log('Clipboard API失败，尝试备用方法');
+                }
             }
             
-            // 更新UI反馈
-            copyBtn.textContent = '已复制!';
-            setTimeout(() => {
-                copyBtn.textContent = '复制';
-            }, 2000);
+            if (!success) {
+                // 备用方法
+                const range = document.createRange();
+                range.selectNode(textarea);
+                window.getSelection().removeAllRanges();
+                window.getSelection().addRange(range);
+                
+                success = document.execCommand('copy');
+                window.getSelection().removeAllRanges();
+            }
+            
+            // 移除临时元素
+            document.body.removeChild(textarea);
+            
+            if (success) {
+                // 更新UI反馈
+                copyBtn.textContent = '已复制!';
+                setTimeout(() => {
+                    copyBtn.textContent = '复制';
+                }, 2000);
+            } else {
+                throw new Error('两种复制方法都失败了');
+            }
             
         } catch (err) {
             console.error('复制失败:', err);
             // 提供手动复制选项
+            outputText.focus();
             outputText.select();
-            alert('自动复制失败，请手动复制文本:\n\n' + fullText);
+            alert('自动复制失败，请长按选择文本后手动复制:\n\n' + fullText);
         }
+        
+        // 阻止事件冒泡
+        e.stopPropagation();
     });
     
     function formatText() {
